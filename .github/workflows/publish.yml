@@ -161,15 +161,19 @@ jobs:
           gh release delete "${TAG}" --yes 2>/dev/null || true
           git push origin ":refs/tags/${TAG}" 2>/dev/null || true
 
+          # Rename to canonical asset name before upload
+          ASSET="${PROJECT_ID}-${CV_VERSION}.db"
+          mv "${DB_FILE}" "${ASSET}"
+
           # Create release
           gh release create "${TAG}" \
             --title "${PROJECT_ID} ${CV_VERSION}" \
             --notes "${RELEASE_NOTES}" \
             ${PRE_FLAG} \
-            "${DB_FILE}#${PROJECT_ID}-${CV_VERSION}.db"
+            "${ASSET}"
 
           # Direct download URL (stable GitHub release asset format)
-          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${PROJECT_ID}-${CV_VERSION}.db"
+          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET}"
 
           echo "tag=${TAG}"                    >> "$GITHUB_OUTPUT"
           echo "download_url=${DOWNLOAD_URL}"  >> "$GITHUB_OUTPUT"
