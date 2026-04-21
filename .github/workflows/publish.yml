@@ -90,24 +90,23 @@ jobs:
           OUTPUT="${PROJECT_ID}.db"
 
           if [ "${PROJECT_ID}" = "universe" ]; then
-            # Universe-only build
-            esgvoc admin build \
-              --universe-repo "${{ inputs.universe_repo }}" \
-              --universe-ref  "${{ inputs.universe_ref }}" \
-              --project-id    universe \
-              --cv-version    "${CV_VERSION}" \
-              --universe-version "${UNIVERSE_VERSION}" \
-              --output        "${OUTPUT}"
+            # Universe-only build — dedicated command
+            esgvoc admin build-universe \
+              --universe-repo     "${{ inputs.universe_repo }}" \
+              --universe-ref      "${{ inputs.universe_ref }}" \
+              --universe-version  "${CV_VERSION}" \
+              --output            "${OUTPUT}"
           else
+            # Project build (clones both repos)
             esgvoc admin build \
-              --project-repo  "${{ inputs.project_repo }}" \
-              --project-ref   "${{ inputs.project_ref }}" \
-              --universe-repo "${{ inputs.universe_repo }}" \
-              --universe-ref  "${{ inputs.universe_ref }}" \
-              --project-id    "${PROJECT_ID}" \
-              --cv-version    "${CV_VERSION}" \
+              --project-repo     "${{ inputs.project_repo }}" \
+              --project-ref      "${{ inputs.project_ref }}" \
+              --universe-repo    "${{ inputs.universe_repo }}" \
+              --universe-ref     "${{ inputs.universe_ref }}" \
+              --project-id       "${PROJECT_ID}" \
+              --cv-version       "${CV_VERSION}" \
               --universe-version "${UNIVERSE_VERSION}" \
-              --output        "${OUTPUT}"
+              --output           "${OUTPUT}"
           fi
 
           # Compute checksum and size
