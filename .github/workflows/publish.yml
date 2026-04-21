@@ -75,7 +75,7 @@ jobs:
       - name: Install esgvoc
         run: |
           uv pip install --system \
-            "git+https://github.com/${{ github.repository_owner }}/esgf-vocab.git@${{ inputs.esgvoc_ref }}"
+            "git+https://github.com/ESGF/esgf-vocab.git@versionning"
 
       # -----------------------------------------------------------------------
       # 3. Build the DB
