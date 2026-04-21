@@ -168,9 +168,8 @@ jobs:
             ${PRE_FLAG} \
             "${DB_FILE}#${PROJECT_ID}-${CV_VERSION}.db"
 
-          # Get the download URL of the uploaded asset
-          DOWNLOAD_URL=$(gh release view "${TAG}" --json assets \
-            --jq ".assets[] | select(.name == \"${PROJECT_ID}-${CV_VERSION}.db\") | .url")
+          # Direct download URL (stable GitHub release asset format)
+          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${PROJECT_ID}-${CV_VERSION}.db"
 
           echo "tag=${TAG}"                    >> "$GITHUB_OUTPUT"
           echo "download_url=${DOWNLOAD_URL}"  >> "$GITHUB_OUTPUT"
