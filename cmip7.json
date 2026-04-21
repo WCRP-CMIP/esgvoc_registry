@@ -1,0 +1,15 @@
+{
+  "project_id": "cmip7",
+  "releases": [
+    {
+      "version": "v1.0.0",
+      "tag": "cmip7.v1.0.0",
+      "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/cmip7.v1.0.0/cmip7-v1.0.0.db",
+      "checksum_sha256": "be65e387d5c2cfa653fe332f509ed8214257f1e9832e775bacd760ff829bb970",
+      "size_bytes": 6356992,
+      "is_prerelease": false,
+      "published_at": "2026-04-21T16:34:56Z",
+      "universe_version": "dev-latest"
+    }
+  ]
+}
