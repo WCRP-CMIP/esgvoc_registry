@@ -1,0 +1,242 @@
+name: Publish DB
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "Project ID (e.g. cmip7, universe, cmip6)"
+        required: true
+        type: string
+      cv_version:
+        description: "CV version tag to use (e.g. v2.1.0, dev-latest)"
+        required: true
+        type: string
+      universe_version:
+        description: "Universe version embedded in this DB (e.g. v1.2.0)"
+        required: true
+        type: string
+      project_repo:
+        description: "Project CV repo  owner/repo  (leave blank for universe-only build)"
+        required: false
+        type: string
+        default: ""
+      project_ref:
+        description: "Branch / tag of the project repo to build from"
+        required: false
+        type: string
+        default: "main"
+      universe_repo:
+        description: "Universe repo  owner/repo"
+        required: false
+        type: string
+        default: "WCRP-CMIP/WCRP-universe"
+      universe_ref:
+        description: "Branch / tag of the universe repo"
+        required: false
+        type: string
+        default: "esgvoc"
+      is_prerelease:
+        description: "Mark as pre-release (dev-latest, rc…)"
+        required: false
+        type: boolean
+        default: false
+      esgvoc_ref:
+        description: "esgvoc branch/tag to install (default: esgvoc)"
+        required: false
+        type: string
+        default: "esgvoc"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create releases + push index file
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout this registry repo (so we can update the JSON index)
+      # -----------------------------------------------------------------------
+      - name: Checkout registry repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 2. Install Python + uv + esgvoc
+      # -----------------------------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install esgvoc
+        run: |
+          uv pip install --system \
+            "git+https://github.com/${{ github.repository_owner }}/esgf-vocab.git@${{ inputs.esgvoc_ref }}"
+
+      # -----------------------------------------------------------------------
+      # 3. Build the DB
+      # -----------------------------------------------------------------------
+      - name: Build DB
+        id: build
+        run: |
+          set -e
+          PROJECT_ID="${{ inputs.project_id }}"
+          CV_VERSION="${{ inputs.cv_version }}"
+          UNIVERSE_VERSION="${{ inputs.universe_version }}"
+          OUTPUT="${PROJECT_ID}.db"
+
+          if [ "${PROJECT_ID}" = "universe" ]; then
+            # Universe-only build
+            esgvoc admin build \
+              --universe-repo "${{ inputs.universe_repo }}" \
+              --universe-ref  "${{ inputs.universe_ref }}" \
+              --project-id    universe \
+              --cv-version    "${CV_VERSION}" \
+              --universe-version "${UNIVERSE_VERSION}" \
+              --output        "${OUTPUT}"
+          else
+            esgvoc admin build \
+              --project-repo  "${{ inputs.project_repo }}" \
+              --project-ref   "${{ inputs.project_ref }}" \
+              --universe-repo "${{ inputs.universe_repo }}" \
+              --universe-ref  "${{ inputs.universe_ref }}" \
+              --project-id    "${PROJECT_ID}" \
+              --cv-version    "${CV_VERSION}" \
+              --universe-version "${UNIVERSE_VERSION}" \
+              --output        "${OUTPUT}"
+          fi
+
+          # Compute checksum and size
+          SHA256=$(sha256sum "${OUTPUT}" | awk '{print $1}')
+          SIZE=$(stat -c%s "${OUTPUT}")
+          echo "output=${OUTPUT}"        >> "$GITHUB_OUTPUT"
+          echo "sha256=${SHA256}"        >> "$GITHUB_OUTPUT"
+          echo "size=${SIZE}"            >> "$GITHUB_OUTPUT"
+          echo "project_id=${PROJECT_ID}" >> "$GITHUB_OUTPUT"
+          echo "cv_version=${CV_VERSION}" >> "$GITHUB_OUTPUT"
+
+      # -----------------------------------------------------------------------
+      # 4. Validate the DB
+      # -----------------------------------------------------------------------
+      - name: Validate DB
+        run: esgvoc admin validate "${{ steps.build.outputs.output }}"
+
+      # -----------------------------------------------------------------------
+      # 5. Create / update GitHub Release and upload DB asset
+      # -----------------------------------------------------------------------
+      - name: Publish release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          PROJECT_ID="${{ steps.build.outputs.project_id }}"
+          CV_VERSION="${{ steps.build.outputs.cv_version }}"
+          TAG="${PROJECT_ID}.${CV_VERSION}"
+          DB_FILE="${{ steps.build.outputs.output }}"
+          SHA256="${{ steps.build.outputs.sha256 }}"
+          SIZE="${{ steps.build.outputs.size }}"
+          IS_PRE="${{ inputs.is_prerelease }}"
+
+          PRE_FLAG=""
+          if [ "${IS_PRE}" = "true" ]; then
+            PRE_FLAG="--prerelease"
+          fi
+
+          RELEASE_NOTES="## ${PROJECT_ID} ${CV_VERSION}
+
+          - **Universe version:** ${{ inputs.universe_version }}
+          - **Checksum (SHA-256):** \`${SHA256}\`
+          - **Size:** ${SIZE} bytes
+          - **Built with esgvoc:** \`${{ inputs.esgvoc_ref }}\`
+
+          \`\`\`
+          esgvoc use ${PROJECT_ID}@${CV_VERSION}
+          \`\`\`"
+
+          # Delete existing release with this tag if it exists (idempotent)
+          gh release delete "${TAG}" --yes 2>/dev/null || true
+          git push origin ":refs/tags/${TAG}" 2>/dev/null || true
+
+          # Create release
+          gh release create "${TAG}" \
+            --title "${PROJECT_ID} ${CV_VERSION}" \
+            --notes "${RELEASE_NOTES}" \
+            ${PRE_FLAG} \
+            "${DB_FILE}#${PROJECT_ID}-${CV_VERSION}.db"
+
+          # Get the download URL of the uploaded asset
+          DOWNLOAD_URL=$(gh release view "${TAG}" --json assets \
+            --jq ".assets[] | select(.name == \"${PROJECT_ID}-${CV_VERSION}.db\") | .url")
+
+          echo "tag=${TAG}"                    >> "$GITHUB_OUTPUT"
+          echo "download_url=${DOWNLOAD_URL}"  >> "$GITHUB_OUTPUT"
+
+      # -----------------------------------------------------------------------
+      # 6. Update the per-project JSON index on main
+      # -----------------------------------------------------------------------
+      - name: Update index JSON
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          PROJECT_ID="${{ steps.build.outputs.project_id }}"
+          CV_VERSION="${{ steps.build.outputs.cv_version }}"
+          TAG="${{ steps.release.outputs.tag }}"
+          SHA256="${{ steps.build.outputs.sha256 }}"
+          SIZE="${{ steps.build.outputs.size }}"
+          DOWNLOAD_URL="${{ steps.release.outputs.download_url }}"
+          IS_PRE="${{ inputs.is_prerelease }}"
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          INDEX_FILE="${PROJECT_ID}.json"
+
+          # Build new release entry
+          NEW_ENTRY=$(python3 - <<PYEOF
+          import json, sys
+
+          new = {
+              "version":          "${CV_VERSION}",
+              "tag":              "${TAG}",
+              "url":              "${DOWNLOAD_URL}",
+              "checksum_sha256":  "${SHA256}",
+              "size_bytes":       int("${SIZE}"),
+              "is_prerelease":    "${IS_PRE}" == "true",
+              "published_at":     "${NOW}",
+              "universe_version": "${{ inputs.universe_version }}",
+          }
+
+          # Load existing index or create fresh one
+          try:
+              with open("${INDEX_FILE}") as f:
+                  idx = json.load(f)
+          except FileNotFoundError:
+              idx = {"project_id": "${PROJECT_ID}", "releases": []}
+
+          # Remove any existing entry with the same version (idempotent)
+          idx["releases"] = [r for r in idx["releases"] if r.get("version") != "${CV_VERSION}"]
+
+          # Prepend newest release
+          idx["releases"].insert(0, new)
+
+          with open("${INDEX_FILE}", "w") as f:
+              json.dump(idx, f, indent=2)
+              f.write("\n")
+
+          print(json.dumps(idx, indent=2))
+          PYEOF
+          )
+
+          echo "Updated ${INDEX_FILE}:"
+          cat "${INDEX_FILE}"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${INDEX_FILE}"
+          git diff --cached --quiet && echo "No changes to index" && exit 0
+          git commit -m "index(${PROJECT_ID}): add ${CV_VERSION}"
+          git push origin main
