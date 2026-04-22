@@ -2,6 +2,16 @@
   "project_id": "universe",
   "releases": [
     {
+      "version": "v1.0.0",
+      "tag": "universe.v1.0.0",
+      "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/universe.v1.0.0/universe-v1.0.0.db",
+      "checksum_sha256": "ef3b8f64aab6f97d2132652c321a9e4ca5dc7f006a16790e5be3ea0c6bb6b59d",
+      "size_bytes": 12525568,
+      "is_prerelease": false,
+      "published_at": "2026-04-22T07:29:45Z",
+      "universe_version": "v1.0.0"
+    },
+    {
       "version": "dev-latest",
       "tag": "universe.dev-latest",
       "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/universe.dev-latest/universe.db",
