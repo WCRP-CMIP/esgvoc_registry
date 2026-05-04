@@ -4,7 +4,7 @@
     {
       "version": "v1.0.0",
       "tag": "universe.v1.0.0",
-      "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/universe.v1.0.0/universe-v1.0.0.db",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.v1.0.0/universe-v1.0.0.db",
       "checksum_sha256": "ef3b8f64aab6f97d2132652c321a9e4ca5dc7f006a16790e5be3ea0c6bb6b59d",
       "size_bytes": 12525568,
       "is_prerelease": false,
@@ -14,7 +14,7 @@
     {
       "version": "dev-latest",
       "tag": "universe.dev-latest",
-      "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/universe.dev-latest/universe.db",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.dev-latest/universe.db",
       "checksum_sha256": "165ecf69426522447ea9113c67a4271334f9b7ab02277f4f5d7e37cc4e9b0ce2",
       "size_bytes": 12537856,
       "is_prerelease": false,

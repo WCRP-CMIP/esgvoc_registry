@@ -4,7 +4,7 @@
     {
       "version": "v1.0.0",
       "tag": "cmip6.v1.0.0",
-      "url": "https://github.com/ltroussellier/test_esgvoc_dbs/releases/download/cmip6.v1.0.0/cmip6-v1.0.0.db",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip6.v1.0.0/cmip6-v1.0.0.db",
       "checksum_sha256": "4f7aedde59e8829f83fdb8f137aab0d418f0ec3478a575a50d02996e85416b21",
       "size_bytes": 3878912,
       "is_prerelease": false,
