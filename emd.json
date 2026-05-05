@@ -1,0 +1,15 @@
+{
+  "project_id": "emd",
+  "releases": [
+    {
+      "version": "v1.0.0",
+      "tag": "emd.v1.0.0",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/emd.v1.0.0/emd-v1.0.0.db",
+      "checksum_sha256": "2993645a242f5021ad3184a55703f6fe30eefc14ad9c0e7ee8eae0af5845846f",
+      "size_bytes": 143360,
+      "is_prerelease": false,
+      "published_at": "2026-05-05T10:25:09Z",
+      "universe_version": "v1.0.0"
+    }
+  ]
+}
