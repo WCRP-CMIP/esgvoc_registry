@@ -2,6 +2,16 @@
   "project_id": "emd",
   "releases": [
     {
+      "version": "dev-latest",
+      "tag": "emd.dev-latest",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/emd.dev-latest/emd-dev-latest.db",
+      "checksum_sha256": "036628ce48c673ca6e5cef2613bb489a5b56a3d66a0ab7588d0c76901911de7f",
+      "size_bytes": 143360,
+      "is_prerelease": false,
+      "published_at": "2026-05-05T10:38:54Z",
+      "universe_version": "dev-latest"
+    },
+    {
       "version": "v1.0.0",
       "tag": "emd.v1.0.0",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/emd.v1.0.0/emd-v1.0.0.db",
