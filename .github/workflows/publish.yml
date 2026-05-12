@@ -57,7 +57,7 @@ jobs:
       # 1. Checkout this registry repo (so we can update the JSON index)
       # -----------------------------------------------------------------------
       - name: Checkout registry repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,7 +65,7 @@ jobs:
       # 2. Install Python + uv + esgvoc
       # -----------------------------------------------------------------------
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.4.0
         with:
           python-version: "3.12"
 
@@ -74,8 +74,7 @@ jobs:
 
       - name: Install esgvoc
         run: |
-          uv pip install --system \
-            "git+https://github.com/ESGF/esgf-vocab.git@versionning"
+          uv pip install --system "esgvoc>=4.0.0"
 
       # -----------------------------------------------------------------------
       # 3. Build the DB
