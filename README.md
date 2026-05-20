@@ -99,52 +99,40 @@ This manifest is read by `esgvoc admin build` during the CI build. The `release_
 
 ### Workflow inputs
 
-#### Universe snapshot
+| Input | Required | Description |
+|-------|----------|-------------|
+| `project_id` | yes | Project ID (e.g. `universe`, `cmip7`, `cmip6`) |
+| `bump_type` | yes | Version bump: `patch`, `minor`, `major`, or `dev-latest` |
+| `universe_version` | no | Universe version to embed. Blank = auto-resolve latest stable from `universe.json` (for universe builds, defaults to the computed version itself) |
+| `project_repo` | no | CV repo `owner/repo` (blank for universe-only builds) |
+| `project_ref` | no | Branch/tag of the CV repo (default: `main`) |
+| `universe_repo` | no | Universe repo (default: `WCRP-CMIP/WCRP-universe`) |
+| `universe_ref` | no | Branch/tag of the universe repo (default: `esgvoc`) |
+| `esgvoc_ref` | no | esgvoc branch/tag to install (default: `esgvoc`) |
 
-| Input | Value |
-|-------|-------|
-| `project_id` | `universe` |
-| `cv_version` | e.g. `1.0.2` |
-| `universe_version` | same as `cv_version` |
-| `universe_repo` | `WCRP-CMIP/WCRP-universe` |
-| `universe_ref` | `esgvoc` |
-| `is_prerelease` | `false` |
-
-#### Project snapshot (e.g. cmip7)
-
-| Input | Value |
-|-------|-------|
-| `project_id` | `cmip7` |
-| `cv_version` | e.g. `1.1.0` |
-| `universe_version` | version of universe embedded, e.g. `1.0.2` |
-| `project_repo` | `WCRP-CMIP/CMIP7_CVs` |
-| `project_ref` | `esgvoc` |
-| `universe_repo` | `WCRP-CMIP/WCRP-universe` |
-| `universe_ref` | `esgvoc` |
-| `is_prerelease` | `false` |
+The version is **computed automatically** from the bump type and the current latest stable version in the project's index JSON. For example, if the latest stable version of `cmip7` is `1.1.0` and you select `patch`, the workflow publishes `1.1.1`. Selecting `dev-latest` publishes to the fixed `dev-latest` label (always marked as prerelease).
 
 > Always publish `universe` before any project that embeds it.
 
 ### Triggering via `gh` CLI
 
 ```bash
-# Universe
+# Universe — patch bump (e.g. 1.0.2 → 1.0.3)
 gh workflow run publish.yml \
-  --field project_id=universe \
-  --field cv_version=1.0.2 \
-  --field universe_version=1.0.2 \
-  --field universe_ref=esgvoc \
-  --field is_prerelease=false
+  -f project_id=universe \
+  -f bump_type=patch
 
-# Project
+# Project — minor bump (e.g. 1.1.0 → 1.2.0)
 gh workflow run publish.yml \
-  --field project_id=cmip7 \
-  --field cv_version=1.1.0 \
-  --field universe_version=1.0.2 \
-  --field project_repo=WCRP-CMIP/CMIP7_CVs \
-  --field project_ref=esgvoc \
-  --field universe_ref=esgvoc \
-  --field is_prerelease=false
+  -f project_id=cmip7 \
+  -f bump_type=minor \
+  -f project_repo=WCRP-CMIP/CMIP7_CVs
+
+# Dev snapshot
+gh workflow run publish.yml \
+  -f project_id=cmip7 \
+  -f bump_type=dev-latest \
+  -f project_repo=WCRP-CMIP/CMIP7_CVs
 ```
 
 ### What the workflow does

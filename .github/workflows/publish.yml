@@ -7,14 +7,20 @@ on:
         description: "Project ID (e.g. cmip7, universe, cmip6)"
         required: true
         type: string
-      cv_version:
-        description: "CV version tag to use (e.g. v2.1.0, dev-latest)"
+      bump_type:
+        description: "Version bump type"
         required: true
-        type: string
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - dev-latest
       universe_version:
-        description: "Universe version embedded in this DB (e.g. v1.2.0)"
-        required: true
+        description: "Universe version embedded in this DB (blank = auto-resolve latest stable from universe.json)"
+        required: false
         type: string
+        default: ""
       project_repo:
         description: "Project CV repo  owner/repo  (leave blank for universe-only build)"
         required: false
@@ -35,11 +41,6 @@ on:
         required: false
         type: string
         default: "esgvoc"
-      is_prerelease:
-        description: "Mark as pre-release (dev-latest, rc…)"
-        required: false
-        type: boolean
-        default: false
       esgvoc_ref:
         description: "esgvoc branch/tag to install (default: esgvoc)"
         required: false
@@ -77,15 +78,107 @@ jobs:
           uv pip install --system "esgvoc>=4.0.0"
 
       # -----------------------------------------------------------------------
-      # 3. Build the DB
+      # 3. Resolve version from bump type + index JSON
+      # -----------------------------------------------------------------------
+      - name: Resolve version
+        id: version
+        run: |
+          set -e
+          PROJECT_ID="${{ inputs.project_id }}"
+          BUMP_TYPE="${{ inputs.bump_type }}"
+          INDEX_FILE="${PROJECT_ID}.json"
+
+          CV_VERSION=$(python3 - <<PYEOF
+          import json, sys
+
+          bump = "${BUMP_TYPE}"
+          if bump == "dev-latest":
+              print("dev-latest")
+              sys.exit(0)
+
+          # Find latest stable version from index
+          try:
+              with open("${INDEX_FILE}") as f:
+                  idx = json.load(f)
+          except FileNotFoundError:
+              # No index yet — start at 1.0.0
+              if bump == "major":
+                  print("1.0.0")
+              elif bump == "minor":
+                  print("0.1.0")
+              else:
+                  print("0.0.1")
+              sys.exit(0)
+
+          latest = None
+          for r in idx["releases"]:
+              v = r.get("version", "")
+              if v == "dev-latest" or r.get("is_prerelease"):
+                  continue
+              # Strip legacy v prefix
+              v = v.lstrip("v")
+              try:
+                  parts = [int(x) for x in v.split(".")]
+                  if len(parts) == 3:
+                      latest = parts
+                      break
+              except ValueError:
+                  continue
+
+          if latest is None:
+              latest = [0, 0, 0]
+
+          major, minor, patch = latest
+          if bump == "major":
+              major += 1; minor = 0; patch = 0
+          elif bump == "minor":
+              minor += 1; patch = 0
+          else:
+              patch += 1
+
+          print(f"{major}.{minor}.{patch}")
+          PYEOF
+          )
+
+          # Auto-resolve universe_version if not provided
+          UNIVERSE_VERSION="${{ inputs.universe_version }}"
+          if [ -z "${UNIVERSE_VERSION}" ]; then
+            if [ "${PROJECT_ID}" = "universe" ]; then
+              UNIVERSE_VERSION="${CV_VERSION}"
+            else
+              UNIVERSE_VERSION=$(python3 -c "
+          import json
+          with open('universe.json') as f:
+              idx = json.load(f)
+          for r in idx['releases']:
+              v = r.get('version', '')
+              if v != 'dev-latest' and not r.get('is_prerelease'):
+                  print(v); break
+          ")
+            fi
+          fi
+
+          IS_PRE="false"
+          if [ "${BUMP_TYPE}" = "dev-latest" ]; then
+            IS_PRE="true"
+          fi
+
+          echo "cv_version=${CV_VERSION}"           >> "$GITHUB_OUTPUT"
+          echo "universe_version=${UNIVERSE_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${IS_PRE}"             >> "$GITHUB_OUTPUT"
+
+          echo "Resolved: project=${PROJECT_ID} version=${CV_VERSION} universe=${UNIVERSE_VERSION} prerelease=${IS_PRE}"
+
+      # -----------------------------------------------------------------------
+      # 4. Build the DB
       # -----------------------------------------------------------------------
       - name: Build DB
         id: build
         run: |
           set -e
           PROJECT_ID="${{ inputs.project_id }}"
-          CV_VERSION="${{ inputs.cv_version }}"
-          UNIVERSE_VERSION="${{ inputs.universe_version }}"
+          CV_VERSION="${{ steps.version.outputs.cv_version }}"
+          UNIVERSE_VERSION="${{ steps.version.outputs.universe_version }}"
           OUTPUT="${PROJECT_ID}.db"
 
           if [ "${PROJECT_ID}" = "universe" ]; then
@@ -118,13 +211,13 @@ jobs:
           echo "cv_version=${CV_VERSION}" >> "$GITHUB_OUTPUT"
 
       # -----------------------------------------------------------------------
-      # 4. Validate the DB
+      # 5. Validate the DB
       # -----------------------------------------------------------------------
       - name: Validate DB
         run: esgvoc admin validate "${{ steps.build.outputs.output }}"
 
       # -----------------------------------------------------------------------
-      # 5. Create / update GitHub Release and upload DB asset
+      # 6. Create / update GitHub Release and upload DB asset
       # -----------------------------------------------------------------------
       - name: Publish release
         id: release
@@ -138,7 +231,7 @@ jobs:
           DB_FILE="${{ steps.build.outputs.output }}"
           SHA256="${{ steps.build.outputs.sha256 }}"
           SIZE="${{ steps.build.outputs.size }}"
-          IS_PRE="${{ inputs.is_prerelease }}"
+          IS_PRE="${{ steps.version.outputs.is_prerelease }}"
 
           PRE_FLAG=""
           if [ "${IS_PRE}" = "true" ]; then
@@ -147,7 +240,7 @@ jobs:
 
           RELEASE_NOTES="## ${PROJECT_ID} ${CV_VERSION}
 
-          - **Universe version:** ${{ inputs.universe_version }}
+          - **Universe version:** ${{ steps.version.outputs.universe_version }}
           - **Checksum (SHA-256):** \`${SHA256}\`
           - **Size:** ${SIZE} bytes
           - **Built with esgvoc:** \`${{ inputs.esgvoc_ref }}\`
@@ -178,7 +271,7 @@ jobs:
           echo "download_url=${DOWNLOAD_URL}"  >> "$GITHUB_OUTPUT"
 
       # -----------------------------------------------------------------------
-      # 6. Update the per-project JSON index on main
+      # 7. Update the per-project JSON index on main
       # -----------------------------------------------------------------------
       - name: Update index JSON
         env:
@@ -191,7 +284,7 @@ jobs:
           SHA256="${{ steps.build.outputs.sha256 }}"
           SIZE="${{ steps.build.outputs.size }}"
           DOWNLOAD_URL="${{ steps.release.outputs.download_url }}"
-          IS_PRE="${{ inputs.is_prerelease }}"
+          IS_PRE="${{ steps.version.outputs.is_prerelease }}"
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           INDEX_FILE="${PROJECT_ID}.json"
@@ -208,7 +301,7 @@ jobs:
               "size_bytes":       int("${SIZE}"),
               "is_prerelease":    "${IS_PRE}" == "true",
               "published_at":     "${NOW}",
-              "universe_version": "${{ inputs.universe_version }}",
+              "universe_version": "${{ steps.version.outputs.universe_version }}",
           }
 
           # Load existing index or create fresh one
