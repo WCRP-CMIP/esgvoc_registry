@@ -105,12 +105,12 @@ This manifest is read by `esgvoc admin build` during the CI build. The `release_
 | `bump_type` | yes | Version bump: `patch`, `minor`, `major`, or `dev-latest` |
 | `universe_version` | no | Universe version to embed. Blank = auto-resolve latest stable from `universe.json` (for universe builds, defaults to the computed version itself) |
 | `project_repo` | no | CV repo `owner/repo` (blank for universe-only builds) |
-| `project_ref` | no | Branch/tag of the CV repo (default: `main`) |
+| `project_ref` | no | Branch/tag of the CV repo (default: `main`; auto-switches to `esgvoc_dev` for `dev-latest`) |
 | `universe_repo` | no | Universe repo (default: `WCRP-CMIP/WCRP-universe`) |
-| `universe_ref` | no | Branch/tag of the universe repo (default: `esgvoc`) |
+| `universe_ref` | no | Branch/tag of the universe repo (default: `esgvoc`; auto-switches to `esgvoc_dev` for `dev-latest`) |
 | `esgvoc_ref` | no | esgvoc branch/tag to install (default: `esgvoc`) |
 
-The version is **computed automatically** from the bump type and the current latest stable version in the project's index JSON. For example, if the latest stable version of `cmip7` is `1.1.0` and you select `patch`, the workflow publishes `1.1.1`. Selecting `dev-latest` publishes to the fixed `dev-latest` label (always marked as prerelease).
+The version is **computed automatically** from the bump type and the current latest stable version in the project's index JSON. For example, if the latest stable version of `cmip7` is `1.1.0` and you select `patch`, the workflow publishes `1.1.1`. Selecting `dev-latest` publishes to the fixed `dev-latest` label (always marked as prerelease) and automatically builds from the `esgvoc_dev` branch. Explicitly passing `project_ref` or `universe_ref` overrides this default.
 
 > Always publish `universe` before any project that embeds it.
 

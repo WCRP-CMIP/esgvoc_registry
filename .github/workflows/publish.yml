@@ -163,11 +163,25 @@ jobs:
             IS_PRE="true"
           fi
 
+          # Resolve branch refs: dev-latest defaults to esgvoc_dev, explicit input wins
+          UNIVERSE_REF="${{ inputs.universe_ref }}"
+          PROJECT_REF="${{ inputs.project_ref }}"
+          if [ "${BUMP_TYPE}" = "dev-latest" ]; then
+            if [ "${UNIVERSE_REF}" = "esgvoc" ]; then
+              UNIVERSE_REF="esgvoc_dev"
+            fi
+            if [ "${PROJECT_REF}" = "main" ]; then
+              PROJECT_REF="esgvoc_dev"
+            fi
+          fi
+
           echo "cv_version=${CV_VERSION}"           >> "$GITHUB_OUTPUT"
           echo "universe_version=${UNIVERSE_VERSION}" >> "$GITHUB_OUTPUT"
           echo "is_prerelease=${IS_PRE}"             >> "$GITHUB_OUTPUT"
+          echo "universe_ref=${UNIVERSE_REF}"        >> "$GITHUB_OUTPUT"
+          echo "project_ref=${PROJECT_REF}"          >> "$GITHUB_OUTPUT"
 
-          echo "Resolved: project=${PROJECT_ID} version=${CV_VERSION} universe=${UNIVERSE_VERSION} prerelease=${IS_PRE}"
+          echo "Resolved: project=${PROJECT_ID} version=${CV_VERSION} universe=${UNIVERSE_VERSION} prerelease=${IS_PRE} universe_ref=${UNIVERSE_REF} project_ref=${PROJECT_REF}"
 
       # -----------------------------------------------------------------------
       # 4. Build the DB
@@ -185,16 +199,16 @@ jobs:
             # Universe-only build — dedicated command
             esgvoc admin build-universe \
               --universe-repo     "${{ inputs.universe_repo }}" \
-              --universe-ref      "${{ inputs.universe_ref }}" \
+              --universe-ref      "${{ steps.version.outputs.universe_ref }}" \
               --universe-version  "${CV_VERSION}" \
               --output            "${OUTPUT}"
           else
             # Project build (clones both repos)
             esgvoc admin build \
               --project-repo     "${{ inputs.project_repo }}" \
-              --project-ref      "${{ inputs.project_ref }}" \
+              --project-ref      "${{ steps.version.outputs.project_ref }}" \
               --universe-repo    "${{ inputs.universe_repo }}" \
-              --universe-ref     "${{ inputs.universe_ref }}" \
+              --universe-ref     "${{ steps.version.outputs.universe_ref }}" \
               --project-id       "${PROJECT_ID}" \
               --cv-version       "${CV_VERSION}" \
               --universe-version "${UNIVERSE_VERSION}" \
