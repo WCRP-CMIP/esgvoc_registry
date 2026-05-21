@@ -40,7 +40,7 @@ on:
         description: "Branch / tag of the universe repo"
         required: false
         type: string
-        default: "esgvoc"
+        default: "main"
       esgvoc_ref:
         description: "esgvoc branch/tag to install (default: esgvoc)"
         required: false
@@ -167,7 +167,7 @@ jobs:
           UNIVERSE_REF="${{ inputs.universe_ref }}"
           PROJECT_REF="${{ inputs.project_ref }}"
           if [ "${BUMP_TYPE}" = "dev-latest" ]; then
-            if [ "${UNIVERSE_REF}" = "esgvoc" ]; then
+            if [ "${UNIVERSE_REF}" = "main" ]; then
               UNIVERSE_REF="esgvoc_dev"
             fi
             if [ "${PROJECT_REF}" = "main" ]; then
@@ -189,11 +189,13 @@ jobs:
       - name: Build DB
         id: build
         run: |
-          set -e
+          set -eo pipefail
           PROJECT_ID="${{ inputs.project_id }}"
           CV_VERSION="${{ steps.version.outputs.cv_version }}"
           UNIVERSE_VERSION="${{ steps.version.outputs.universe_version }}"
           OUTPUT="${PROJECT_ID}.db"
+
+          BUILD_LOG=$(mktemp)
 
           if [ "${PROJECT_ID}" = "universe" ]; then
             # Universe-only build — dedicated command
@@ -201,7 +203,8 @@ jobs:
               --universe-repo     "${{ inputs.universe_repo }}" \
               --universe-ref      "${{ steps.version.outputs.universe_ref }}" \
               --universe-version  "${CV_VERSION}" \
-              --output            "${OUTPUT}"
+              --output            "${OUTPUT}" \
+              2>&1 | tee "${BUILD_LOG}"
           else
             # Project build (clones both repos)
             esgvoc admin build \
@@ -212,7 +215,16 @@ jobs:
               --project-id       "${PROJECT_ID}" \
               --cv-version       "${CV_VERSION}" \
               --universe-version "${UNIVERSE_VERSION}" \
-              --output           "${OUTPUT}"
+              --output           "${OUTPUT}" \
+              2>&1 | tee "${BUILD_LOG}"
+          fi
+
+          # Fail if esgvoc logged any errors (it exits 0 even on ingestion failures)
+          if grep -qi "ERROR\|FAILURE" "${BUILD_LOG}"; then
+            echo "::error::Build produced errors — refusing to publish a broken DB"
+            echo "Errors found in build output:"
+            grep -i "ERROR\|FAILURE" "${BUILD_LOG}"
+            exit 1
           fi
 
           # Compute checksum and size
