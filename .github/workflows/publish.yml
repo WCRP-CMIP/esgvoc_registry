@@ -41,6 +41,11 @@ on:
         required: false
         type: string
         default: "main"
+      version_override:
+        description: "Force a specific version instead of auto-bumping (e.g. 1.2.1)"
+        required: false
+        type: string
+        default: ""
       esgvoc_ref:
         description: "esgvoc branch/tag to install (default: esgvoc)"
         required: false
@@ -90,7 +95,13 @@ jobs:
           BUMP_TYPE="${{ inputs.bump_type }}"
           INDEX_FILE="${PROJECT_ID}.json"
 
-          CV_VERSION=$(python3 - <<PYEOF
+          # Use version_override if provided, otherwise auto-bump
+          VERSION_OVERRIDE="${{ inputs.version_override }}"
+          if [ -n "${VERSION_OVERRIDE}" ]; then
+            CV_VERSION="${VERSION_OVERRIDE}"
+            echo "Using version override: ${CV_VERSION}"
+          else
+            CV_VERSION=$(python3 - <<PYEOF
           import json, sys
 
           bump = "${BUMP_TYPE}"
@@ -140,7 +151,8 @@ jobs:
 
           print(f"{major}.{minor}.{patch}")
           PYEOF
-          )
+            )
+          fi
 
           # Auto-resolve universe_version if not provided
           UNIVERSE_VERSION="${{ inputs.universe_version }}"
