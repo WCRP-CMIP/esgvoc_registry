@@ -82,6 +82,8 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Resolve version
         id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           PROJECT_ID="${{ inputs.project_id }}"
