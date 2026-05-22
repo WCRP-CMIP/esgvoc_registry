@@ -19,7 +19,8 @@
       "size_bytes": 6381568,
       "is_prerelease": false,
       "published_at": "2026-05-12T09:59:27Z",
-      "universe_version": "1.0.2"
+      "universe_version": "1.0.2",
+      "source_sha": "e60203af3c6164fcacf70f25b82d72b424023731"
     },
     {
       "version": "v1.0.0",
