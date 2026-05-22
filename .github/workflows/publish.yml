@@ -41,11 +41,6 @@ on:
         required: false
         type: string
         default: "main"
-      source_sha:
-        description: "Commit SHA from the CV repo used for this build (stored in index for changelog diffing)"
-        required: false
-        type: string
-        default: ""
       esgvoc_ref:
         description: "esgvoc branch/tag to install (default: esgvoc)"
         required: false
@@ -180,13 +175,24 @@ jobs:
             fi
           fi
 
+          # Resolve source SHA: HEAD of the repo/branch we're building from
+          if [ -n "${{ inputs.project_repo }}" ]; then
+            SOURCE_REPO="${{ inputs.project_repo }}"
+            SOURCE_REF="${PROJECT_REF}"
+          else
+            SOURCE_REPO="${{ inputs.universe_repo }}"
+            SOURCE_REF="${UNIVERSE_REF}"
+          fi
+          SOURCE_SHA=$(gh api "repos/${SOURCE_REPO}/commits/${SOURCE_REF}" --jq '.sha')
+
           echo "cv_version=${CV_VERSION}"           >> "$GITHUB_OUTPUT"
           echo "universe_version=${UNIVERSE_VERSION}" >> "$GITHUB_OUTPUT"
           echo "is_prerelease=${IS_PRE}"             >> "$GITHUB_OUTPUT"
           echo "universe_ref=${UNIVERSE_REF}"        >> "$GITHUB_OUTPUT"
           echo "project_ref=${PROJECT_REF}"          >> "$GITHUB_OUTPUT"
+          echo "source_sha=${SOURCE_SHA}"            >> "$GITHUB_OUTPUT"
 
-          echo "Resolved: project=${PROJECT_ID} version=${CV_VERSION} universe=${UNIVERSE_VERSION} prerelease=${IS_PRE} universe_ref=${UNIVERSE_REF} project_ref=${PROJECT_REF}"
+          echo "Resolved: project=${PROJECT_ID} version=${CV_VERSION} universe=${UNIVERSE_VERSION} prerelease=${IS_PRE} universe_ref=${UNIVERSE_REF} project_ref=${PROJECT_REF} source_sha=${SOURCE_SHA}"
 
       # -----------------------------------------------------------------------
       # 4. Build the DB
@@ -324,7 +330,7 @@ jobs:
           NEW_ENTRY=$(python3 - <<PYEOF
           import json, sys
 
-          source_sha = "${{ inputs.source_sha }}"
+          source_sha = "${{ steps.version.outputs.source_sha }}"
 
           new = {
               "version":          "${CV_VERSION}",
