@@ -189,6 +189,25 @@ jobs:
             fi
           fi
 
+          # Verify branches exist in their repos, fallback gracefully
+          # Some projects use "esgvoc" instead of "main" as their prod branch
+          if [ -n "${{ inputs.project_repo }}" ]; then
+            if ! gh api "repos/${{ inputs.project_repo }}/branches/${PROJECT_REF}" --silent 2>/dev/null; then
+              if [ "${BUMP_TYPE}" = "dev-latest" ]; then
+                FALLBACK="esgvoc_dev"
+              else
+                FALLBACK="esgvoc"
+              fi
+              echo "::warning::Branch '${PROJECT_REF}' not found in ${{ inputs.project_repo }}, trying '${FALLBACK}'"
+              if gh api "repos/${{ inputs.project_repo }}/branches/${FALLBACK}" --silent 2>/dev/null; then
+                PROJECT_REF="${FALLBACK}"
+              else
+                echo "::error::Neither '${PROJECT_REF}' nor '${FALLBACK}' found in ${{ inputs.project_repo }}"
+                exit 1
+              fi
+            fi
+          fi
+
           # Resolve source SHA: HEAD of the repo/branch we're building from
           if [ -n "${{ inputs.project_repo }}" ]; then
             SOURCE_REPO="${{ inputs.project_repo }}"
