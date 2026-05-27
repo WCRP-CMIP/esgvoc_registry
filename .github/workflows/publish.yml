@@ -408,4 +408,14 @@ jobs:
           git add "${INDEX_FILE}"
           git diff --cached --quiet && echo "No changes to index" && exit 0
           git commit -m "index(${PROJECT_ID}): add ${CV_VERSION}"
-          git push origin main
+
+          # Retry push up to 3 times (transient GitHub errors can reject pushes)
+          for attempt in 1 2 3; do
+            if git push origin main 2>&1; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "::warning::Push attempt ${attempt} failed, retrying in 5s…"
+            sleep 5
+            git pull --rebase origin main
+          done
