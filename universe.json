@@ -5,12 +5,12 @@
       "version": "dev-latest",
       "tag": "universe.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.dev-latest/universe-dev-latest.db",
-      "checksum_sha256": "139f3517bc8c1b3a8e27d63d99a050fb405c4ac84a881977be833476795f517f",
-      "size_bytes": 12500992,
+      "checksum_sha256": "dcb1cc0b849281b37014a51678eba47b6266e1c4c0b540911ebd67b0c03ab581",
+      "size_bytes": 12521472,
       "is_prerelease": true,
-      "published_at": "2026-05-29T11:19:55Z",
+      "published_at": "2026-06-01T16:08:54Z",
       "universe_version": "dev-latest",
-      "source_sha": "a3c85da3fb15b60ffd45ceef1ba2bae325e3ac98"
+      "source_sha": "286e52475f9515330efeb15875be45279b7c3677"
     },
     {
       "version": "1.0.6",
