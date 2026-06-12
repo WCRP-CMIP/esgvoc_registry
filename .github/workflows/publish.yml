@@ -360,14 +360,23 @@ jobs:
           DOWNLOAD_URL="${{ steps.release.outputs.download_url }}"
           IS_PRE="${{ steps.version.outputs.is_prerelease }}"
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SOURCE_SHA="${{ steps.version.outputs.source_sha }}"
+          UNIVERSE_VERSION="${{ steps.version.outputs.universe_version }}"
 
           INDEX_FILE="${PROJECT_ID}.json"
 
-          # Build new release entry
-          NEW_ENTRY=$(python3 - <<PYEOF
-          import json, sys
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          source_sha = "${{ steps.version.outputs.source_sha }}"
+          # Retry loop: pull latest main, apply update, push — retry on conflict
+          for attempt in 1 2 3; do
+            # Always start from the latest remote main
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Update the index JSON on the fresh checkout
+            python3 - <<PYEOF
+          import json
 
           new = {
               "version":          "${CV_VERSION}",
@@ -377,9 +386,10 @@ jobs:
               "size_bytes":       int("${SIZE}"),
               "is_prerelease":    "${IS_PRE}" == "true",
               "published_at":     "${NOW}",
-              "universe_version": "${{ steps.version.outputs.universe_version }}",
+              "universe_version": "${UNIVERSE_VERSION}",
           }
 
+          source_sha = "${SOURCE_SHA}"
           if source_sha:
               new["source_sha"] = source_sha
 
@@ -399,27 +409,23 @@ jobs:
           with open("${INDEX_FILE}", "w") as f:
               json.dump(idx, f, indent=2)
               f.write("\n")
-
-          print(json.dumps(idx, indent=2))
           PYEOF
-          )
 
-          echo "Updated ${INDEX_FILE}:"
-          cat "${INDEX_FILE}"
+            echo "Updated ${INDEX_FILE}:"
+            cat "${INDEX_FILE}"
 
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "${INDEX_FILE}"
-          git diff --cached --quiet && echo "No changes to index" && exit 0
-          git commit -m "index(${PROJECT_ID}): add ${CV_VERSION}"
+            git add "${INDEX_FILE}"
+            git diff --cached --quiet && echo "No changes to index" && exit 0
+            git commit -m "index(${PROJECT_ID}): add ${CV_VERSION}"
 
-          # Retry push up to 3 times (transient GitHub errors can reject pushes)
-          for attempt in 1 2 3; do
             if git push origin main 2>&1; then
               echo "Push succeeded on attempt ${attempt}"
-              break
+              exit 0
             fi
+
             echo "::warning::Push attempt ${attempt} failed, retrying in 5s…"
             sleep 5
-            git pull --rebase origin main
           done
+
+          echo "::error::Failed to push index update after 3 attempts"
+          exit 1
