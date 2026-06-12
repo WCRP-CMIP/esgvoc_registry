@@ -52,6 +52,10 @@ on:
         type: string
         default: "esgvoc"
 
+concurrency:
+  group: publish-db
+  cancel-in-progress: false
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -284,7 +288,7 @@ jobs:
       # 5. Validate the DB
       # -----------------------------------------------------------------------
       - name: Validate DB
-        run: esgvoc admin validate "${{ steps.build.outputs.output }}"
+        run: esgvoc admin validate --full "${{ steps.build.outputs.output }}"
 
       # -----------------------------------------------------------------------
       # 6. Create / update GitHub Release and upload DB asset
