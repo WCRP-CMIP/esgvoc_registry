@@ -2,6 +2,17 @@
   "project_id": "cordex-cmip6",
   "releases": [
     {
+      "version": "1.2.2",
+      "tag": "cordex-cmip6.1.2.2",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cordex-cmip6.1.2.2/cordex-cmip6-1.2.2.db",
+      "checksum_sha256": "83cca844dc5441d36e576a2f951f69eb92c3682d8fdea7eda9345b41d9158ee6",
+      "size_bytes": 1085440,
+      "is_prerelease": false,
+      "published_at": "2026-06-16T15:03:20Z",
+      "universe_version": "1.0.15",
+      "source_sha": "72bb18a5ab43473c387067aff22fa3ee8cc032af"
+    },
+    {
       "version": "dev-latest",
       "tag": "cordex-cmip6.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cordex-cmip6.dev-latest/cordex-cmip6-dev-latest.db",
