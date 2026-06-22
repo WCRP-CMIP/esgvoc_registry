@@ -2,6 +2,17 @@
   "project_id": "cmip7",
   "releases": [
     {
+      "version": "dev-latest",
+      "tag": "cmip7.dev-latest",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.dev-latest/cmip7-dev-latest.db",
+      "checksum_sha256": "7dfa86992523261afcf6c4b038ea34c2980e11d5bb740700f87793d35a47ddda",
+      "size_bytes": 6397952,
+      "is_prerelease": true,
+      "published_at": "2026-06-22T11:02:58Z",
+      "universe_version": "1.0.16",
+      "source_sha": "c73e39c35b0cd3760c8297cc5e7190422a3f74d2"
+    },
+    {
       "version": "1.2.7",
       "tag": "cmip7.1.2.7",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.1.2.7/cmip7-1.2.7.db",
@@ -22,17 +33,6 @@
       "published_at": "2026-06-16T10:35:17Z",
       "universe_version": "1.0.12",
       "source_sha": "579947824b7901f82713cecce7ab242319cb99db"
-    },
-    {
-      "version": "dev-latest",
-      "tag": "cmip7.dev-latest",
-      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.dev-latest/cmip7-dev-latest.db",
-      "checksum_sha256": "01c5c52d2a42e26817a042446f561a63eb3daaa59c7d1ee10318ff508efbfa56",
-      "size_bytes": 6397952,
-      "is_prerelease": true,
-      "published_at": "2026-06-16T10:21:49Z",
-      "universe_version": "1.0.11",
-      "source_sha": "031767dec3c95e58e3606f9cd2ce2e7a6823553d"
     },
     {
       "version": "1.2.5",
