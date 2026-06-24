@@ -5,12 +5,12 @@
       "version": "dev-latest",
       "tag": "cmip7.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.dev-latest/cmip7-dev-latest.db",
-      "checksum_sha256": "7dfa86992523261afcf6c4b038ea34c2980e11d5bb740700f87793d35a47ddda",
-      "size_bytes": 6397952,
+      "checksum_sha256": "aad54c8b0118a6d59008bee92511d001a981f87108e78d73c216e7f2100374e5",
+      "size_bytes": 6426624,
       "is_prerelease": true,
-      "published_at": "2026-06-22T11:02:58Z",
-      "universe_version": "1.0.16",
-      "source_sha": "c73e39c35b0cd3760c8297cc5e7190422a3f74d2"
+      "published_at": "2026-06-24T08:57:17Z",
+      "universe_version": "1.0.17",
+      "source_sha": "ce3a062e2f14c701086587d292812ca3ede46783"
     },
     {
       "version": "1.2.7",
