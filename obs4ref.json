@@ -2,6 +2,17 @@
   "project_id": "obs4ref",
   "releases": [
     {
+      "version": "2.0.1",
+      "tag": "obs4ref.2.0.1",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.2.0.1/obs4ref-2.0.1.db",
+      "checksum_sha256": "4261e1afd8a9fcbd6629359ae6e15f5306b1c332869e8aea0ef4c6b93db6891e",
+      "size_bytes": 1110016,
+      "is_prerelease": false,
+      "published_at": "2026-07-23T12:38:36Z",
+      "universe_version": "1.0.23",
+      "source_sha": "ed746af47d2e7ff2438bf34c8cf7d35d04f4131c"
+    },
+    {
       "version": "dev-latest",
       "tag": "obs4ref.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.dev-latest/obs4ref-dev-latest.db",
