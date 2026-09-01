@@ -5,12 +5,12 @@
       "version": "dev-latest",
       "tag": "obs4ref.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.dev-latest/obs4ref-dev-latest.db",
-      "checksum_sha256": "142f1534e1adde768f18797dbc52fa4bc85591649585038faee1b58843dac41a",
-      "size_bytes": 790528,
+      "checksum_sha256": "d84a66608fa0ea725cc7e942d8d3087d4c31f17c054276cbd17dad0d02f78c05",
+      "size_bytes": 1097728,
       "is_prerelease": true,
-      "published_at": "2026-09-01T16:07:18Z",
+      "published_at": "2026-09-01T16:18:41Z",
       "universe_version": "2.0.2",
-      "source_sha": "caebeaeb477a44a1f411b9b6d07919ab654feebe"
+      "source_sha": "c9e853c0810b5c329b8b3ec92877118aad70b4c8"
     },
     {
       "version": "2.1.0",
