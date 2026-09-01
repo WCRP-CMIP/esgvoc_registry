@@ -2,6 +2,17 @@
   "project_id": "universe",
   "releases": [
     {
+      "version": "dev-latest",
+      "tag": "universe.dev-latest",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.dev-latest/universe-dev-latest.db",
+      "checksum_sha256": "b750a3f499837c86c5e2c3047c5affb49c546ba947c5ea3143cc186121a48c61",
+      "size_bytes": 18984960,
+      "is_prerelease": true,
+      "published_at": "2026-09-01T12:59:48Z",
+      "universe_version": "dev-latest",
+      "source_sha": "28fd11b001ab811d93cd55b87b88c77132d0bbad"
+    },
+    {
       "version": "2.0.2",
       "tag": "universe.2.0.2",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.2.0.2/universe-2.0.2.db",
@@ -22,17 +33,6 @@
       "published_at": "2026-08-31T12:53:36Z",
       "universe_version": "2.0.1",
       "source_sha": "4e81a7ff28ef06fc04ebb66f26d129c9331ed9f4"
-    },
-    {
-      "version": "dev-latest",
-      "tag": "universe.dev-latest",
-      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.dev-latest/universe-dev-latest.db",
-      "checksum_sha256": "4ad8ff27d1c337008df1430ba2f908afddcebad4bab59c2c2cee7d490ce4a828",
-      "size_bytes": 18944000,
-      "is_prerelease": true,
-      "published_at": "2026-08-31T12:36:21Z",
-      "universe_version": "dev-latest",
-      "source_sha": "cfebf5f699f441404266956946fa55e12c5748d3"
     },
     {
       "version": "2.0.0",
