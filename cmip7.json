@@ -2,6 +2,17 @@
   "project_id": "cmip7",
   "releases": [
     {
+      "version": "2.3.3",
+      "tag": "cmip7.2.3.3",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.2.3.3/cmip7-2.3.3.db",
+      "checksum_sha256": "045b7be9b5156aabd716a2084cb483472882dcefb586dfcb1e05d8b0b04b045a",
+      "size_bytes": 17375232,
+      "is_prerelease": false,
+      "published_at": "2026-09-22T23:49:43Z",
+      "universe_version": "3.2.3",
+      "source_sha": "deddd958fdb313ab2df71e476d30044a8a386a5b"
+    },
+    {
       "version": "2.3.2",
       "tag": "cmip7.2.3.2",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/cmip7.2.3.2/cmip7-2.3.2.db",
