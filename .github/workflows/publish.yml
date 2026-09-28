@@ -278,11 +278,29 @@ jobs:
           # Compute checksum and size
           SHA256=$(sha256sum "${OUTPUT}" | awk '{print $1}')
           SIZE=$(stat -c%s "${OUTPUT}")
+
+          # esgvoc version required to use this DB (CV manifest esgvoc.min_version,
+          # embedded by the build), published in the index so esgvoc can check it
+          # before downloading.
+          ESGVOC_MIN_VERSION=$(python3 - "${OUTPUT}" <<'PYEOF'
+          import sqlite3, sys
+          try:
+              row = sqlite3.connect(sys.argv[1]).execute(
+                  "SELECT value FROM _esgvoc_metadata WHERE key='esgvoc_min_version'"
+              ).fetchone()
+          except sqlite3.Error:
+              row = None
+          print(row[0] if row else "")
+          PYEOF
+          )
+          echo "esgvoc_min_version=${ESGVOC_MIN_VERSION:-none}"
+
           echo "output=${OUTPUT}"        >> "$GITHUB_OUTPUT"
           echo "sha256=${SHA256}"        >> "$GITHUB_OUTPUT"
           echo "size=${SIZE}"            >> "$GITHUB_OUTPUT"
           echo "project_id=${PROJECT_ID}" >> "$GITHUB_OUTPUT"
           echo "cv_version=${CV_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "esgvoc_min_version=${ESGVOC_MIN_VERSION}" >> "$GITHUB_OUTPUT"
 
       # -----------------------------------------------------------------------
       # 5. Validate the DB
@@ -318,6 +336,7 @@ jobs:
           - **Checksum (SHA-256):** \`${SHA256}\`
           - **Size:** ${SIZE} bytes
           - **Built with esgvoc:** \`${{ inputs.esgvoc_ref }}\`
+          - **Requires esgvoc:** >= \`${{ steps.build.outputs.esgvoc_min_version || 'any' }}\`
 
           \`\`\`
           esgvoc use ${PROJECT_ID}@${CV_VERSION}
@@ -362,6 +381,7 @@ jobs:
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           SOURCE_SHA="${{ steps.version.outputs.source_sha }}"
           UNIVERSE_VERSION="${{ steps.version.outputs.universe_version }}"
+          ESGVOC_MIN_VERSION="${{ steps.build.outputs.esgvoc_min_version }}"
 
           INDEX_FILE="${PROJECT_ID}.json"
 
@@ -392,6 +412,10 @@ jobs:
           source_sha = "${SOURCE_SHA}"
           if source_sha:
               new["source_sha"] = source_sha
+
+          esgvoc_min_version = "${ESGVOC_MIN_VERSION}"
+          if esgvoc_min_version:
+              new["esgvoc_min_version"] = esgvoc_min_version
 
           # Load existing index or create fresh one
           try:

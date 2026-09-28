@@ -36,7 +36,8 @@ emd.json
       "size_bytes": 6381568,
       "is_prerelease": false,
       "published_at": "2026-05-12T09:59:27Z",
-      "universe_version": "1.0.2"
+      "universe_version": "1.0.2",
+      "esgvoc_min_version": "6.2.0"
     }
   ]
 }
@@ -52,8 +53,9 @@ emd.json
 | `is_prerelease` | `true` for `dev-latest` and release candidates |
 | `published_at` | ISO 8601 UTC timestamp |
 | `universe_version` | Version of WCRP-universe embedded in this snapshot |
+| `esgvoc_min_version` | Oldest esgvoc able to use this snapshot (`esgvoc.min_version` of the CV manifest). esgvoc refuses to download or activate it when older. Absent in entries published before it was introduced. |
 
-Releases are listed newest-first. `esgvoc` resolves `latest` to the first non-prerelease entry.
+Releases are listed newest-first. `esgvoc` resolves `latest` to the first non-prerelease entry it can use (see `esgvoc_min_version`).
 
 ---
 
