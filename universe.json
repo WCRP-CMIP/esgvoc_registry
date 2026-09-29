@@ -2,6 +2,18 @@
   "project_id": "universe",
   "releases": [
     {
+      "version": "3.2.6",
+      "tag": "universe.3.2.6",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.3.2.6/universe-3.2.6.db",
+      "checksum_sha256": "30e016ecbf80ba996f15f717aac64cbae3ec762da7bba09d7ab836e61c09b190",
+      "size_bytes": 22544384,
+      "is_prerelease": false,
+      "published_at": "2026-09-29T10:16:23Z",
+      "universe_version": "3.2.6",
+      "source_sha": "de3de506ece52bf52369e75bef8448e23273b04d",
+      "esgvoc_min_version": "4.0.0"
+    },
+    {
       "version": "dev-latest",
       "tag": "universe.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/universe.dev-latest/universe-dev-latest.db",
