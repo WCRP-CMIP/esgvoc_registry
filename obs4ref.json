@@ -2,6 +2,18 @@
   "project_id": "obs4ref",
   "releases": [
     {
+      "version": "dev-latest",
+      "tag": "obs4ref.dev-latest",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.dev-latest/obs4ref-dev-latest.db",
+      "checksum_sha256": "3a2af08f62cb6197c864ec05d21a369b0432c92991c045a0deb647e467aac3ac",
+      "size_bytes": 1171456,
+      "is_prerelease": true,
+      "published_at": "2026-10-08T11:55:52Z",
+      "universe_version": "3.2.7",
+      "source_sha": "c1c4190c32c9ebe6cbe9e8002a64f4d29dbbc6b0",
+      "esgvoc_min_version": "6.2.0"
+    },
+    {
       "version": "3.1.0",
       "tag": "obs4ref.3.1.0",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.3.1.0/obs4ref-3.1.0.db",
@@ -23,17 +35,6 @@
       "published_at": "2026-09-02T07:55:09Z",
       "universe_version": "3.0.0",
       "source_sha": "cc13cc594306cdb29f73e92f765430a8411ffbe5"
-    },
-    {
-      "version": "dev-latest",
-      "tag": "obs4ref.dev-latest",
-      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4ref.dev-latest/obs4ref-dev-latest.db",
-      "checksum_sha256": "d84a66608fa0ea725cc7e942d8d3087d4c31f17c054276cbd17dad0d02f78c05",
-      "size_bytes": 1097728,
-      "is_prerelease": true,
-      "published_at": "2026-09-01T16:18:41Z",
-      "universe_version": "2.0.2",
-      "source_sha": "c9e853c0810b5c329b8b3ec92877118aad70b4c8"
     },
     {
       "version": "2.1.0",
