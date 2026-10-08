@@ -2,6 +2,18 @@
   "project_id": "input4mips",
   "releases": [
     {
+      "version": "1.1.1",
+      "tag": "input4mips.1.1.1",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/input4mips.1.1.1/input4mips-1.1.1.db",
+      "checksum_sha256": "9486e2fb1f0adb61f5ca68f456e11a51c9086ad81b06951f7c6786eeac8556d2",
+      "size_bytes": 704512,
+      "is_prerelease": false,
+      "published_at": "2026-10-08T12:33:07Z",
+      "universe_version": "3.3.0",
+      "source_sha": "c5045797988de16f7dd868b300a9de1a5f052f4d",
+      "esgvoc_min_version": "7.0.0"
+    },
+    {
       "version": "dev-latest",
       "tag": "input4mips.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/input4mips.dev-latest/input4mips-dev-latest.db",
