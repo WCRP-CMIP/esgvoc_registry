@@ -1,0 +1,120 @@
+name: Universe impact check
+
+# A project DB embeds the universe data its terms link to, so a universe
+# release can change a project that has no change of its own. Every day,
+# each project is rebuilt from the source commit of its latest published
+# release against the latest universe release, and its terms are compared
+# with the published DB (esgvoc admin diff --terms). If they differ, an issue
+# "[universe-impact] <project>: …" is opened (or updated) with the changelog
+# and the publish command. Publishing stays manual. The issue is closed once
+# the project is published with that universe.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "Only check this project (blank = all)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: universe-impact
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # project_ref: the prod branch the registry publishes from.
+        # Not checked: emd (no source_sha in its index) and cordex-cmip5
+        # (can't be built with the current universe: variable/sic.json missing).
+        include:
+          - { project_id: cmip7, project_repo: WCRP-CMIP/CMIP7-CVs, project_ref: main }
+          - { project_id: cmip6, project_repo: WCRP-CMIP/CMIP6_CVs, project_ref: esgvoc }
+          - { project_id: cmip6plus, project_repo: WCRP-CMIP/CMIP6Plus_CVs, project_ref: esgvoc }
+          - { project_id: input4mips, project_repo: PCMDI/input4MIPs_CVs, project_ref: esgvoc }
+          - { project_id: obs4ref, project_repo: Climate-REF/Obs4REF_CVs, project_ref: main }
+          - { project_id: cordex-cmip6, project_repo: WCRP-CORDEX/cordex-cmip6-cv, project_ref: esgvoc }
+
+    steps:
+      - name: Skip other projects
+        id: filter
+        run: |
+          if [ -n "${{ inputs.project_id }}" ] && [ "${{ inputs.project_id }}" != "${{ matrix.project_id }}" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout registry repo
+        if: steps.filter.outputs.run == 'true'
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        if: steps.filter.outputs.run == 'true'
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.12"
+
+      - name: Install esgvoc
+        if: steps.filter.outputs.run == 'true'
+        run: |
+          pip install uv
+          # esgvoc.admin.term_diff (esgvoc admin diff --terms)
+          uv pip install --system "esgvoc>=7.2.0"
+
+      - name: Check universe impact
+        if: steps.filter.outputs.run == 'true'
+        id: check
+        run: |
+          rc=0
+          python .github/scripts/check_universe_impact.py \
+            --project-id "${{ matrix.project_id }}" \
+            --project-repo "${{ matrix.project_repo }}" \
+            --project-ref "${{ matrix.project_ref }}" \
+            --index-dir . \
+            --work-dir "${RUNNER_TEMP}/impact" || rc=$?
+          cat "${RUNNER_TEMP}/impact/report.md" >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
+      - name: Open, update or close the issue
+        if: always() && steps.filter.outputs.run == 'true' && steps.check.outputs.status != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          STATUS: ${{ steps.check.outputs.status }}
+          TITLE: ${{ steps.check.outputs.title }}
+          PREFIX: "[universe-impact] ${{ matrix.project_id }}:"
+        run: |
+          set -e
+          EXISTING=$(gh issue list -R "$REPO" --state open --label universe-impact --limit 100 \
+            --json number,title --jq "[.[] | select(.title | startswith(\"${PREFIX}\"))][0].number // empty")
+
+          case "$STATUS" in
+            affected|error)
+              gh label create universe-impact -R "$REPO" --color FBCA04 \
+                --description "A universe release changes a published project" --force
+              if [ -n "$EXISTING" ]; then
+                gh issue edit "$EXISTING" -R "$REPO" --title "$TITLE" --body-file "${RUNNER_TEMP}/impact/report.md"
+                echo "Updated issue #$EXISTING"
+              else
+                gh issue create -R "$REPO" --title "$TITLE" --label universe-impact \
+                  --body-file "${RUNNER_TEMP}/impact/report.md"
+              fi
+              ;;
+            up-to-date|not-affected)
+              if [ -n "$EXISTING" ]; then
+                gh issue close "$EXISTING" -R "$REPO" --comment "$(cat "${RUNNER_TEMP}/impact/report.md")"
+                echo "Closed issue #$EXISTING"
+              fi
+              ;;
+          esac
