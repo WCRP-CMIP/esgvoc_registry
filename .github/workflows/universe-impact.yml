@@ -69,8 +69,15 @@ jobs:
         if: steps.filter.outputs.run == 'true'
         run: |
           pip install uv
-          # esgvoc.admin.term_diff (esgvoc admin diff --terms)
-          uv pip install --system "esgvoc>=7.2.0"
+          # esgvoc.admin.term_diff (esgvoc admin diff --terms).
+          # Retry: right after an esgvoc release, some PyPI CDN nodes still
+          # serve the old index for a few minutes.
+          for i in 1 2 3 4 5; do
+            uv pip install --system --refresh "esgvoc>=7.2.0" && break
+            [ "$i" = 5 ] && exit 1
+            echo "esgvoc>=7.2.0 not available from PyPI yet, retrying in 60 s"
+            sleep 60
+          done
 
       - name: Check universe impact
         if: steps.filter.outputs.run == 'true'
