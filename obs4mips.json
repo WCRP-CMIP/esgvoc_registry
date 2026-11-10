@@ -2,6 +2,18 @@
   "project_id": "obs4mips",
   "releases": [
     {
+      "version": "1.1.0",
+      "tag": "obs4mips.1.1.0",
+      "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4mips.1.1.0/obs4mips-1.1.0.db",
+      "checksum_sha256": "52c34079cbbe41fee3c14781bfd6572bc852d1cc04247bf9ba9e596f1b835c35",
+      "size_bytes": 1298432,
+      "is_prerelease": false,
+      "published_at": "2026-11-10T12:44:13Z",
+      "universe_version": "3.4.7",
+      "source_sha": "96b5587b31cb89da0737a88613be0633cd523d5d",
+      "esgvoc_min_version": "7.1.0"
+    },
+    {
       "version": "dev-latest",
       "tag": "obs4mips.dev-latest",
       "url": "https://github.com/WCRP-CMIP/esgvoc_registry/releases/download/obs4mips.dev-latest/obs4mips-dev-latest.db",
